@@ -1,0 +1,6 @@
+{
+  "name": "CG MDM Manager",
+  "description": "CG MDM Manager (Mid-Day Meal / PM POSHAN) School Management System with Automatic Google Drive Backup, Attendance, Rice Stock, PDS, Cooking Agency, and Monthly Audit Reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
