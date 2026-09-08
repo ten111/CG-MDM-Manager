@@ -45,7 +45,7 @@ import java.util.*
 @Composable
 fun MonthlyMealScreen(
     viewModel: PoshanViewModel,
-    onNavigateToDailyMeal: () -> Unit
+    onNavigateToDailyMeal: (String?) -> Unit
 ) {
     val context = LocalContext.current
     val selectedMonth by viewModel.selectedMonth.collectAsState()
@@ -126,7 +126,7 @@ fun MonthlyMealScreen(
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = onNavigateToDailyMeal,
+                onClick = { onNavigateToDailyMeal(null) },
                 containerColor = BluePrimary,
                 contentColor = Color.White,
                 icon = { Icon(imageVector = Icons.Default.Add, contentDescription = null) },
@@ -464,7 +464,7 @@ fun MonthlyMealScreen(
                             )
                             Spacer(modifier = Modifier.height(18.dp))
                             Button(
-                                onClick = onNavigateToDailyMeal,
+                                onClick = { onNavigateToDailyMeal(null) },
                                 colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -506,6 +506,7 @@ fun MonthlyMealScreen(
                             .fillMaxWidth()
                             .clickable {
                                 viewModel.setSelectedDate(record.date)
+                                onNavigateToDailyMeal(record.date)
                             }
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
@@ -748,7 +749,7 @@ fun MonthlyMealScreen(
                                     FilledTonalButton(
                                         onClick = {
                                             viewModel.setSelectedDate(record.date)
-                                            onNavigateToDailyMeal()
+                                            onNavigateToDailyMeal(record.date)
                                         },
                                         colors = ButtonDefaults.filledTonalButtonColors(
                                             containerColor = BluePrimary.copy(alpha = 0.12f),
@@ -1110,7 +1111,7 @@ fun MonthlyMealScreen(
                                             ) {
                                                 Column(modifier = Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                     Text("🌾 ${if (isHi) "चावल" else "Rice"}", style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = Color(0xFF334155))
-                                                    Text("${String.format(Locale.US, "%.2f", dailyRiceKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                    Text("${String.format(Locale.US, "%.3f", dailyRiceKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                                                 }
                                             }
                                             Surface(
@@ -1121,7 +1122,7 @@ fun MonthlyMealScreen(
                                             ) {
                                                 Column(modifier = Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                     Text("🥣 ${if (isHi) "दाल" else "Pulses"}", style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = Color(0xFF334155))
-                                                    Text("${String.format(Locale.US, "%.2f", dailyPulseKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                    Text("${String.format(Locale.US, "%.3f", dailyPulseKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                                                 }
                                             }
                                             Surface(
@@ -1132,7 +1133,7 @@ fun MonthlyMealScreen(
                                             ) {
                                                 Column(modifier = Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                     Text("🥬 ${if (isHi) "सब्जी" else "Veg"}", style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = Color(0xFF334155))
-                                                    Text("${String.format(Locale.US, "%.2f", dailyVegKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                    Text("${String.format(Locale.US, "%.3f", dailyVegKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                                                 }
                                             }
                                             Surface(
@@ -1157,10 +1158,13 @@ fun MonthlyMealScreen(
                                             ) {
                                                 usedCustomItems.forEach { item ->
                                                     val totalItemQty = record.studentsServed * item.quantity
-                                                    val qtyStr = if (totalItemQty == totalItemQty.toLong().toDouble()) {
+                                                    val u = item.unit.lowercase()
+                                                    val qtyStr = if (u == "kg" || u == "ml" || u == "l" || u == "ltr") {
+                                                        String.format(Locale.US, "%.3f", totalItemQty)
+                                                    } else if (totalItemQty == totalItemQty.toLong().toDouble()) {
                                                         totalItemQty.toLong().toString()
                                                     } else {
-                                                        String.format(Locale.US, "%.2f", totalItemQty).trimEnd('0').trimEnd('.')
+                                                        String.format(Locale.US, "%.3f", totalItemQty).trimEnd('0').trimEnd('.')
                                                     }
                                                     Surface(
                                                         color = Color(0xFFDCFCE7),
@@ -1485,9 +1489,9 @@ fun buildDailyAttendanceMessage(
 
         sb.appendLine("━━━━━━━━━━━━━━━━━━━")
         sb.appendLine("📦 *प्रयुक्त राशन एवं सामग्री विवरण (Commodity Details):*")
-        sb.appendLine("• 🌾 चावल (Rice): *${String.format(Locale.US, "%.2f", riceKg)} kg*")
-        sb.appendLine("• 🥣 दाल (Pulses): *${String.format(Locale.US, "%.2f", pulseKg)} kg*")
-        sb.appendLine("• 🥬 हरी सब्जी (Vegetables): *${String.format(Locale.US, "%.2f", vegKg)} kg*")
+        sb.appendLine("• 🌾 चावल (Rice): *${String.format(Locale.US, "%.3f", riceKg)} kg*")
+        sb.appendLine("• 🥣 दाल (Pulses): *${String.format(Locale.US, "%.3f", pulseKg)} kg*")
+        sb.appendLine("• 🥬 हरी सब्जी (Vegetables): *${String.format(Locale.US, "%.3f", vegKg)} kg*")
         sb.appendLine("• 🛢️ खाद्य तेल (Cooking Oil): *${String.format(Locale.US, "%.3f", oilKg)} kg*")
         if (saltKg > 0) {
             sb.appendLine("• 🧂 नमक (Salt): *${String.format(Locale.US, "%.3f", saltKg)} kg*")
@@ -1498,10 +1502,13 @@ fun buildDailyAttendanceMessage(
             sb.appendLine("✨ *विशेष / अनुपूरक खाद्य सामग्री (Special Commodities):*")
             usedCustomItems.forEach { item ->
                 val totalItemQty = served * item.quantity
-                val qtyStr = if (totalItemQty == totalItemQty.toLong().toDouble()) {
+                val u = item.unit.lowercase()
+                val qtyStr = if (u == "kg" || u == "ml" || u == "l" || u == "ltr") {
+                    String.format(Locale.US, "%.3f", totalItemQty)
+                } else if (totalItemQty == totalItemQty.toLong().toDouble()) {
                     totalItemQty.toLong().toString()
                 } else {
-                    String.format(Locale.US, "%.2f", totalItemQty).trimEnd('0').trimEnd('.')
+                    String.format(Locale.US, "%.3f", totalItemQty).trimEnd('0').trimEnd('.')
                 }
                 sb.appendLine("• ✨ ${item.getDisplayName(true)}: *$qtyStr ${item.getDisplayUnit(true)}*")
             }

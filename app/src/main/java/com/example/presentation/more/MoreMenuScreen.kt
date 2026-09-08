@@ -1094,7 +1094,11 @@ private fun EditNormsDialog(
     onDismiss: () -> Unit,
     onSave: (ConfigNormsEntity) -> Unit
 ) {
-    var primaryNorm by remember { mutableStateOf((existing?.primaryRiceNormGrams ?: 100.0).toString()) }
+    var primaryNorm by remember {
+        val norm = existing?.primaryRiceNormGrams ?: 150.0
+        val effective = if (norm == 100.0 || norm == 110.0) 150.0 else norm
+        mutableStateOf(effective.toString())
+    }
     var upperPrimaryNorm by remember { mutableStateOf((existing?.upperPrimaryRiceNormGrams ?: 150.0).toString()) }
     var bufferDays by remember { mutableStateOf((existing?.goodStockThresholdDays ?: 15).toString()) }
     var criticalDays by remember { mutableStateOf((existing?.lowStockThresholdDays ?: 5).toString()) }

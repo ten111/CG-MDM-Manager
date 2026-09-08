@@ -406,7 +406,7 @@ object CouponOcrParser {
             val parsedVal = parseDecimalQuintal(dbMatch.groupValues[1])
             if (parsedVal != null && parsedVal in 0.05..50.0 && parsedVal !in excludedNumbers) {
                 quantityKg = parsedVal * 100.0
-                val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.2f", quantityKg)
+                val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.3f", quantityKg)
                 rawAllotmentText = String.format(Locale.US, "%.2f क्वि (%s कि.ग्रा.)", parsedVal, formattedKg)
             }
         }
@@ -421,7 +421,7 @@ object CouponOcrParser {
                     val decHere = parseDecimalQuintal(line)
                     if (decHere != null && decHere in 0.05..50.0 && decHere !in excludedNumbers) {
                         quantityKg = decHere * 100.0
-                        val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.2f", quantityKg)
+                        val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.3f", quantityKg)
                         rawAllotmentText = String.format(Locale.US, "%.2f क्वि (%s कि.ग्रा.)", decHere, formattedKg)
                         break
                     }
@@ -430,7 +430,7 @@ object CouponOcrParser {
                         val decNext = parseDecimalQuintal(nextLine)
                         if (decNext != null && decNext in 0.05..50.0 && decNext !in excludedNumbers) {
                             quantityKg = decNext * 100.0
-                            val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.2f", quantityKg)
+                            val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.3f", quantityKg)
                             rawAllotmentText = String.format(Locale.US, "%.2f क्वि (%s कि.ग्रा.)", decNext, formattedKg)
                             break
                         }
@@ -450,7 +450,7 @@ object CouponOcrParser {
                 val parsedVal = parseDecimalQuintal(dm.groupValues[1])
                 if (parsedVal != null && parsedVal in 0.10..30.0 && parsedVal !in excludedNumbers) {
                     quantityKg = parsedVal * 100.0
-                    val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.2f", quantityKg)
+                    val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.3f", quantityKg)
                     rawAllotmentText = String.format(Locale.US, "%.2f क्वि (%s कि.ग्रा.)", parsedVal, formattedKg)
                     break
                 }
@@ -476,7 +476,7 @@ object CouponOcrParser {
                 val numVal = fbMatch.groupValues[1].toDoubleOrNull() ?: 0.0
                 if (numVal in 0.5..20.0 && numVal !in excludedNumbers) {
                     quantityKg = numVal * 100.0
-                    val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.2f", quantityKg)
+                    val formattedKg = if (quantityKg % 1.0 == 0.0) quantityKg.toInt().toString() else String.format(Locale.US, "%.3f", quantityKg)
                     rawAllotmentText = "$numVal क्वि ($formattedKg कि.ग्रा.)"
                 }
             }

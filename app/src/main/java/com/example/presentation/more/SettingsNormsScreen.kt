@@ -43,37 +43,15 @@ fun SettingsNormsScreen(
     onNavigateBack: () -> Unit
 ) {
     val configNorms by viewModel.configNorms.collectAsState()
-    val agencies by viewModel.allAgencies.collectAsState()
-    val firstAgency = agencies.firstOrNull()
-
-    var shgNameText by remember(firstAgency) {
-        mutableStateOf(firstAgency?.name ?: "माँ दंतेश्वरी स्व-सहायता समूह")
-    }
-    var shgPresidentText by remember(firstAgency) {
-        mutableStateOf(firstAgency?.contactPerson ?: "श्रीमती सुनीता बाई (अध्यक्ष)")
-    }
-    var shgMobileText by remember(firstAgency) {
-        mutableStateOf(firstAgency?.mobile ?: "9826012345")
-    }
-
-    var adminOfficeNameText by remember(configNorms) {
-        mutableStateOf(configNorms?.adminOfficeName?.ifBlank { "Block Education Officer" } ?: "Block Education Officer")
-    }
-    var adminWhatsappText by remember(configNorms) {
-        mutableStateOf(configNorms?.adminOfficeWhatsapp ?: "")
-    }
-    var adminEmailText by remember(configNorms) {
-        mutableStateOf(configNorms?.adminOfficeEmail ?: "")
-    }
-
     val currentLanguage by viewModel.currentLanguage.collectAsState()
     val isHi = currentLanguage == AppLanguage.HINDI
     val context = LocalContext.current
 
-    // Initialize state from existing norms
+    // Initialize state from existing norms (Rice quantity default 0.150 kg per child/day)
     var riceKgText by remember(configNorms) {
-        val primaryNorm = configNorms?.primaryRiceNormGrams ?: 150.0
-        mutableStateOf(String.format(java.util.Locale.US, "%.3f", primaryNorm / 1000.0))
+        val normGrams = configNorms?.primaryRiceNormGrams?.takeIf { it > 0.0 } ?: 150.0
+        val effectiveGrams = if (normGrams == 100.0 || normGrams == 110.0) 150.0 else normGrams
+        mutableStateOf(String.format(java.util.Locale.US, "%.3f", effectiveGrams / 1000.0))
     }
     var pulseKgText by remember(configNorms) {
         val pulse = configNorms?.pulseNormGrams ?: 30.0
@@ -85,7 +63,7 @@ fun SettingsNormsScreen(
     }
     var oilKgText by remember(configNorms) {
         val oil = configNorms?.oilNormGrams ?: 7.5
-        mutableStateOf(String.format(java.util.Locale.US, "%.4f", oil / 1000.0))
+        mutableStateOf(String.format(java.util.Locale.US, "%.3f", oil / 1000.0))
     }
     var saltKgText by remember(configNorms) {
         val salt = configNorms?.saltNormGrams ?: 5.0
@@ -196,251 +174,6 @@ fun SettingsNormsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // SHG PRESIDENT WHATSAPP CARD FOR DIRECT 1-CLICK REPORT SHARING
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(2.dp),
-                border = BorderStroke(1.dp, Color(0xFF86EFAC)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(38.dp)
-                                    .background(Color(0xFF25D366).copy(alpha = 0.15f), CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Chat,
-                                    contentDescription = null,
-                                    tint = Color(0xFF16A34A),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    text = if (isHi) "स्व-सहायता समूह (SHG) रिपोर्ट व्हाट्सएप" else "SHG WhatsApp for Reports",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF0F172A)
-                                )
-                                Text(
-                                    text = if (isHi) "मासिक प्रतिवेदन को 1-क्लिक में व्हाट्सएप भेजने हेतु" else "For 1-click monthly report sharing",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFF64748B)
-                                )
-                            }
-                        }
-                    }
-
-                    HorizontalDivider(color = Color(0xFFE2E8F0))
-
-                    OutlinedTextField(
-                        value = shgNameText,
-                        onValueChange = { shgNameText = it },
-                        label = { Text(if (isHi) "स्व-सहायता समूह का नाम" else "SHG Name") },
-                        leadingIcon = { Icon(Icons.Default.Groups, contentDescription = null, tint = Color(0xFF16A34A)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        singleLine = true
-                    )
-
-                    OutlinedTextField(
-                        value = shgPresidentText,
-                        onValueChange = { shgPresidentText = it },
-                        label = { Text(if (isHi) "अध्यक्ष / सचिव का नाम" else "President / Secretary Name") },
-                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF16A34A)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        singleLine = true
-                    )
-
-                    OutlinedTextField(
-                        value = shgMobileText,
-                        onValueChange = { if (it.length <= 10 && it.all { char -> char.isDigit() }) shgMobileText = it },
-                        label = { Text(if (isHi) "व्हाट्सएप मोबाइल नंबर (10 अंक)" else "WhatsApp Mobile (10 digits)") },
-                        leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null, tint = Color(0xFF16A34A)) },
-                        prefix = { Text("+91 ", fontWeight = FontWeight.Bold, color = Color(0xFF16A34A)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        singleLine = true
-                    )
-
-                    Button(
-                        onClick = {
-                            val existing = firstAgency ?: CookingAgencyEntity(
-                                agencyId = "SHG-DEFAULT-01",
-                                name = shgNameText.ifBlank { "स्व-सहायता समूह" },
-                                contactPerson = shgPresidentText,
-                                mobile = shgMobileText,
-                                address = "",
-                                villageOrCity = ""
-                            )
-                            val updated = existing.copy(
-                                name = shgNameText.ifBlank { existing.name },
-                                contactPerson = shgPresidentText.ifBlank { existing.contactPerson },
-                                mobile = shgMobileText
-                            )
-                            viewModel.saveCookingAgency(updated)
-                            Toast.makeText(
-                                context,
-                                if (isHi) "✓ SHG अध्यक्ष का व्हाट्सएप नंबर सुरक्षित हो गया" else "✓ SHG WhatsApp number saved successfully",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A)),
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = if (isHi) "व्हाट्सएप नंबर सुरक्षित करें" else "Save WhatsApp Number",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-
-            // ADMINISTRATION OFFICE SETUP CARD
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(2.dp),
-                border = BorderStroke(1.dp, Color(0xFF93C5FD)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .background(Color(0xFF3B82F6).copy(alpha = 0.15f), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AccountBalance,
-                                contentDescription = null,
-                                tint = Color(0xFF1D4ED8),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = if (isHi) "प्रशासनिक कार्यालय सेटअप (Administration Office Setup)" else "Administration Office Setup",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF0F172A)
-                            )
-                            Text(
-                                text = if (isHi) "मासिक प्रतिवेदन व्हाट्सएप एवं ईमेल प्रेषण हेतु" else "For sending monthly reports via WhatsApp & Email",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF64748B)
-                            )
-                        }
-                    }
-
-                    HorizontalDivider(color = Color(0xFFE2E8F0))
-
-                    OutlinedTextField(
-                        value = adminOfficeNameText,
-                        onValueChange = { adminOfficeNameText = it },
-                        label = { Text(if (isHi) "कार्यालय का नाम" else "Office Name") },
-                        placeholder = { Text("Block Education Officer") },
-                        leadingIcon = {
-                            Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color(0xFF1D4ED8))
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        singleLine = true
-                    )
-
-                    OutlinedTextField(
-                        value = adminWhatsappText,
-                        onValueChange = {
-                            if (it.length <= 10 && it.all { c -> c.isDigit() }) {
-                                adminWhatsappText = it
-                            }
-                        },
-                        label = { Text(if (isHi) "व्हाट्सएप मोबाइल नंबर" else "WhatsApp Mobile Number") },
-                        prefix = { Text("+91 ", fontWeight = FontWeight.Bold, color = Color(0xFF16A34A)) },
-                        leadingIcon = {
-                            Icon(Icons.Default.Phone, contentDescription = null, tint = Color(0xFF16A34A))
-                        },
-                        placeholder = { Text("10-अंकीय मोबाइल नंबर") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        singleLine = true
-                    )
-
-                    OutlinedTextField(
-                        value = adminEmailText,
-                        onValueChange = { adminEmailText = it.trim() },
-                        label = { Text(if (isHi) "ई-मेल पता (E-mail Address)" else "E-mail Address") },
-                        placeholder = { Text("beo.office@cg.gov.in") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Email, contentDescription = null, tint = Color(0xFFEA580C))
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        singleLine = true
-                    )
-
-                    Button(
-                        onClick = {
-                            val current = configNorms ?: ConfigNormsEntity()
-                            val updated = current.copy(
-                                adminOfficeName = adminOfficeNameText.ifBlank { "Block Education Officer" },
-                                adminOfficeWhatsapp = adminWhatsappText,
-                                adminOfficeEmail = adminEmailText
-                            )
-                            viewModel.saveConfigNorms(updated)
-                            Toast.makeText(
-                                context,
-                                if (isHi) "✓ प्रशासनिक कार्यालय विवरण सुरक्षित हो गया!" else "✓ Administration office details saved!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D4ED8)),
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = if (isHi) "प्रशासनिक कार्यालय विवरण सुरक्षित करें" else "Save Administration Office Details",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-
             // FOOD NORMS & QUANTITIES PER STUDENT CARD
             Card(
                 shape = RoundedCornerShape(16.dp),

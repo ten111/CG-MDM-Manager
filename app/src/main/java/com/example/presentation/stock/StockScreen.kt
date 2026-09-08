@@ -1127,6 +1127,9 @@ private fun StockDashboardTab(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
+                        val unitLower = item.unit.lowercase().trim()
+                        val isWeightOrVolumeUnit = unitLower == "kg" || unitLower == "ml" || unitLower == "l" || unitLower == "ltr" || unitLower == "liter" || unitLower == "litre" || unitLower == "किग्रा" || unitLower == "कि.ग्रा." || unitLower == "मिली"
+
                         // Large Balance Display & Stats Strip
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -1142,7 +1145,7 @@ private fun StockDashboardTab(
                                 )
                                 Row(verticalAlignment = Alignment.Bottom) {
                                     Text(
-                                        text = String.format(Locale.US, "%.2f", remaining),
+                                        text = if (isWeightOrVolumeUnit) String.format(Locale.US, "%.3f", remaining) else String.format(Locale.US, "%.2f", remaining),
                                         style = MaterialTheme.typography.headlineSmall,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = iconTint,
@@ -1177,7 +1180,7 @@ private fun StockDashboardTab(
                                             color = Color(0xFF64748B)
                                         )
                                         Text(
-                                            text = "${String.format(Locale.US, "%.2f", totalStock)} ${item.unit}",
+                                            text = "${if (isWeightOrVolumeUnit) String.format(Locale.US, "%.3f", totalStock) else String.format(Locale.US, "%.2f", totalStock)} ${item.unit}",
                                             fontSize = 11.5.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = BluePrimary
@@ -1198,7 +1201,7 @@ private fun StockDashboardTab(
                                             color = Color(0xFF64748B)
                                         )
                                         Text(
-                                            text = "${String.format(Locale.US, "%.2f", totalUsed)} ${item.unit}",
+                                            text = "${if (isWeightOrVolumeUnit) String.format(Locale.US, "%.3f", totalUsed) else String.format(Locale.US, "%.2f", totalUsed)} ${item.unit}",
                                             fontSize = 11.5.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFFEA580C)
@@ -1340,6 +1343,9 @@ private fun StockDashboardTab(
 
                         Spacer(modifier = Modifier.height(5.dp))
 
+                        val compactUnitLower = item.unit.lowercase().trim()
+                        val isCompactWeightOrVol = compactUnitLower == "kg" || compactUnitLower == "ml" || compactUnitLower == "l" || compactUnitLower == "ltr" || compactUnitLower == "liter" || compactUnitLower == "litre" || compactUnitLower == "किग्रा" || compactUnitLower == "कि.ग्रा." || compactUnitLower == "मिली"
+
                         // Row 3: Remaining Balance on Left, Total & Used metrics on Right
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -1352,7 +1358,7 @@ private fun StockDashboardTab(
                                 modifier = Modifier.padding(start = 2.dp)
                             ) {
                                 Text(
-                                    text = String.format(Locale.US, "%.2f", remaining),
+                                    text = if (isCompactWeightOrVol) String.format(Locale.US, "%.3f", remaining) else String.format(Locale.US, "%.2f", remaining),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = BluePrimary,
@@ -1388,7 +1394,7 @@ private fun StockDashboardTab(
                                             color = Color(0xFF64748B)
                                         )
                                         Text(
-                                            text = String.format(Locale.US, "%.2f", totalStock),
+                                            text = if (isCompactWeightOrVol) String.format(Locale.US, "%.3f", totalStock) else String.format(Locale.US, "%.2f", totalStock),
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = BluePrimary
@@ -1411,7 +1417,7 @@ private fun StockDashboardTab(
                                             color = Color(0xFF64748B)
                                         )
                                         Text(
-                                            text = String.format(Locale.US, "%.2f", totalUsed),
+                                            text = if (isCompactWeightOrVol) String.format(Locale.US, "%.3f", totalUsed) else String.format(Locale.US, "%.2f", totalUsed),
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFFEA580C)
@@ -2186,7 +2192,7 @@ private fun ReceiveStockDialog(
                         if (res.receiptDateDdMmYyyy.isNotBlank()) receiptDate = res.receiptDateDdMmYyyy
                         if (res.pdsShopName.isNotBlank()) selectedShopName = res.pdsShopName
                         if (res.quantityKg > 0.0) {
-                            quantityText = if (res.quantityKg % 1.0 == 0.0) res.quantityKg.toInt().toString() else String.format(Locale.US, "%.2f", res.quantityKg)
+                            quantityText = if (res.quantityKg % 1.0 == 0.0) res.quantityKg.toInt().toString() else String.format(Locale.US, "%.3f", res.quantityKg)
                             selectedItemType = "RICE"
                         }
                         remarks = ""
@@ -2218,7 +2224,7 @@ private fun ReceiveStockDialog(
                         if (res.receiptDateDdMmYyyy.isNotBlank()) receiptDate = res.receiptDateDdMmYyyy
                         if (res.pdsShopName.isNotBlank()) selectedShopName = res.pdsShopName
                         if (res.quantityKg > 0.0) {
-                            quantityText = if (res.quantityKg % 1.0 == 0.0) res.quantityKg.toInt().toString() else String.format(Locale.US, "%.2f", res.quantityKg)
+                            quantityText = if (res.quantityKg % 1.0 == 0.0) res.quantityKg.toInt().toString() else String.format(Locale.US, "%.3f", res.quantityKg)
                             selectedItemType = "RICE"
                         }
                         remarks = ""
@@ -2983,7 +2989,7 @@ private fun EditRiceReceiptDialog(
                         if (res.receiptDateDdMmYyyy.isNotBlank()) receiptDate = res.receiptDateDdMmYyyy
                         if (res.pdsShopName.isNotBlank()) pdsShopName = res.pdsShopName
                         if (res.quantityKg > 0.0) {
-                            quantityText = if (res.quantityKg % 1.0 == 0.0) res.quantityKg.toInt().toString() else String.format(Locale.US, "%.2f", res.quantityKg)
+                            quantityText = if (res.quantityKg % 1.0 == 0.0) res.quantityKg.toInt().toString() else String.format(Locale.US, "%.3f", res.quantityKg)
                         }
                         remarks = ""
                         Toast.makeText(context, if (isHi) "✓ कूपन से विवरण अपडेट हुआ" else "✓ Coupon details updated from photo", Toast.LENGTH_SHORT).show()
@@ -3008,7 +3014,7 @@ private fun EditRiceReceiptDialog(
                         if (res.receiptDateDdMmYyyy.isNotBlank()) receiptDate = res.receiptDateDdMmYyyy
                         if (res.pdsShopName.isNotBlank()) pdsShopName = res.pdsShopName
                         if (res.quantityKg > 0.0) {
-                            quantityText = if (res.quantityKg % 1.0 == 0.0) res.quantityKg.toInt().toString() else String.format(Locale.US, "%.2f", res.quantityKg)
+                            quantityText = if (res.quantityKg % 1.0 == 0.0) res.quantityKg.toInt().toString() else String.format(Locale.US, "%.3f", res.quantityKg)
                         }
                         remarks = ""
                         Toast.makeText(context, if (isHi) "✓ कूपन से विवरण अपडेट हुआ" else "✓ Coupon details updated from photo", Toast.LENGTH_SHORT).show()

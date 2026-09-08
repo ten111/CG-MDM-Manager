@@ -1661,33 +1661,31 @@ private fun SummaryStatCard(
             } else {
                 Spacer(modifier = Modifier.height(3.dp))
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(24.dp)
-                )
-
+            if (onClick == null) {
+                // Style matching the Today's Summary Card
                 Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 8.dp, vertical = 14.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                    verticalArrangement = Arrangement.Center
                 ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
                     val valueFontSize = when {
-                        value.length > 11 -> 15.sp
-                        value.length > 6 -> 17.sp
-                        else -> 20.sp
+                        value.length > 11 -> 18.sp
+                        value.length > 6 -> 22.sp
+                        else -> 28.sp
                     }
                     Text(
                         text = value,
-                        style = MaterialTheme.typography.titleMedium.copy(
+                        style = MaterialTheme.typography.headlineMedium.copy(
                             fontSize = valueFontSize,
                             fontWeight = FontWeight.Bold
                         ),
@@ -1699,16 +1697,66 @@ private fun SummaryStatCard(
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = label,
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontSize = 13.5.sp,
+                            fontWeight = FontWeight.Medium
+                        ),
                         color = Color(0xFF64748B),
-                        fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(26.dp)
+                    )
 
-                if (onClick != null) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        val valueFontSize = when {
+                            value.length > 11 -> 15.sp
+                            value.length > 6 -> 18.sp
+                            else -> 22.sp
+                        }
+                        Text(
+                            text = value,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontSize = valueFontSize,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color(0xFF0F172A),
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color(0xFF64748B),
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
                     Surface(
                         color = iconTint.copy(alpha = 0.10f),
                         shape = RoundedCornerShape(6.dp)
@@ -1722,8 +1770,6 @@ private fun SummaryStatCard(
                             maxLines = 1
                         )
                     }
-                } else {
-                    Spacer(modifier = Modifier.height(18.dp))
                 }
             }
         }

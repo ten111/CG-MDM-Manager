@@ -60,8 +60,15 @@ import java.util.*
 @Composable
 fun DailyMealScreen(
     viewModel: PoshanViewModel,
+    targetDate: String? = null,
     onNavigateBack: () -> Unit
 ) {
+    LaunchedEffect(targetDate) {
+        if (!targetDate.isNullOrBlank()) {
+            viewModel.setSelectedDate(targetDate)
+        }
+    }
+
     val selectedMonth by viewModel.selectedMonth.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
     val enrollment by viewModel.currentMonthEnrollment.collectAsState()
@@ -282,9 +289,9 @@ fun DailyMealScreen(
                 map[item.id] = usedSet.contains(item.id)
             }
         } else {
-            // For new entries or legacy records, default to enabled items in norms
+            // Uncheck the boxes by default for extra/special food items
             customFoodItems.forEach { item ->
-                map[item.id] = item.isEnabled
+                map[item.id] = false
             }
         }
         map
@@ -825,16 +832,6 @@ fun DailyMealScreen(
                                     )
                                 },
                                 placeholder = { Text("अधिकतम $enrolledBoys", fontSize = 11.sp, maxLines = 1) },
-                                supportingText = {
-                                    Text(
-                                        text = "${if (isHi) "दर्ज बालक" else "Enrolled"}: $enrolledBoys",
-                                        color = Color(0xFF334155),
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 11.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                },
                                 colors = poshanTextFieldColors(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.weight(1f),
@@ -858,16 +855,6 @@ fun DailyMealScreen(
                                     )
                                 },
                                 placeholder = { Text("अधिकतम $enrolledGirls", fontSize = 11.sp, maxLines = 1) },
-                                supportingText = {
-                                    Text(
-                                        text = "${if (isHi) "दर्ज बालिका" else "Enrolled"}: $enrolledGirls",
-                                        color = Color(0xFF334155),
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 11.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                },
                                 colors = poshanTextFieldColors(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.weight(1f),
@@ -1122,7 +1109,7 @@ fun DailyMealScreen(
                                         ) {
                                             Column(modifier = Modifier.padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                 Text("🌾 ${if (isHi) "चावल" else "Rice"}", style = MaterialTheme.typography.labelSmall, color = Color(0xFF334155))
-                                                Text("${String.format(Locale.US, "%.2f", estRiceKg)} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                Text("${String.format(Locale.US, "%.3f", estRiceKg)} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                                             }
                                         }
                                         Surface(
@@ -1133,7 +1120,7 @@ fun DailyMealScreen(
                                         ) {
                                             Column(modifier = Modifier.padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                 Text("🥣 ${if (isHi) "दाल" else "Pulses"}", style = MaterialTheme.typography.labelSmall, color = Color(0xFF334155))
-                                                Text("${String.format(Locale.US, "%.2f", estPulseKg)} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                Text("${String.format(Locale.US, "%.3f", estPulseKg)} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                                             }
                                         }
                                         Surface(
@@ -1144,7 +1131,7 @@ fun DailyMealScreen(
                                         ) {
                                             Column(modifier = Modifier.padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                 Text("🥬 ${if (isHi) "सब्जी" else "Veg"}", style = MaterialTheme.typography.labelSmall, color = Color(0xFF334155))
-                                                Text("${String.format(Locale.US, "%.2f", estVegKg)} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                Text("${String.format(Locale.US, "%.3f", estVegKg)} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                                             }
                                         }
                                         Surface(
@@ -1188,8 +1175,16 @@ fun DailyMealScreen(
                                                     shape = RoundedCornerShape(6.dp),
                                                     modifier = Modifier.padding(top = 2.dp)
                                                 ) {
+                                                    val u = item.unit.lowercase()
+                                                    val qtyFormatted = if (u == "kg" || u == "ml" || u == "l" || u == "ltr") {
+                                                        String.format(Locale.US, "%.3f", totalItemQty)
+                                                    } else if (totalItemQty == totalItemQty.toLong().toDouble()) {
+                                                        totalItemQty.toLong().toString()
+                                                    } else {
+                                                        String.format(Locale.US, "%.3f", totalItemQty).trimEnd('0').trimEnd('.')
+                                                    }
                                                     Text(
-                                                        text = "✨ ${item.getDisplayName(isHi)}: ${if (totalItemQty == totalItemQty.toLong().toDouble()) totalItemQty.toLong().toString() else String.format(Locale.US, "%.2f", totalItemQty)} ${item.getDisplayUnit(isHi)}",
+                                                        text = "✨ ${item.getDisplayName(isHi)}: $qtyFormatted ${item.getDisplayUnit(isHi)}",
                                                         style = MaterialTheme.typography.labelSmall,
                                                         fontWeight = FontWeight.Bold,
                                                         color = Color(0xFF166534),
@@ -2687,7 +2682,7 @@ fun DailyMealScreen(
                                             ) {
                                                 Column(modifier = Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                     Text("🌾 ${if (isHi) "चावल" else "Rice"}", style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = Color(0xFF334155))
-                                                    Text("${String.format(Locale.US, "%.2f", dailyRiceKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                    Text("${String.format(Locale.US, "%.3f", dailyRiceKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                                                 }
                                             }
                                             Surface(
@@ -2698,7 +2693,7 @@ fun DailyMealScreen(
                                             ) {
                                                 Column(modifier = Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                     Text("🥣 ${if (isHi) "दाल" else "Pulses"}", style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = Color(0xFF334155))
-                                                    Text("${String.format(Locale.US, "%.2f", dailyPulseKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                    Text("${String.format(Locale.US, "%.3f", dailyPulseKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                                                 }
                                             }
                                             Surface(
@@ -2709,7 +2704,7 @@ fun DailyMealScreen(
                                             ) {
                                                 Column(modifier = Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                     Text("🥬 ${if (isHi) "सब्जी" else "Veg"}", style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = Color(0xFF334155))
-                                                    Text("${String.format(Locale.US, "%.2f", dailyVegKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                    Text("${String.format(Locale.US, "%.3f", dailyVegKg)} kg", style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                                                 }
                                             }
                                             Surface(
@@ -2734,10 +2729,13 @@ fun DailyMealScreen(
                                             ) {
                                                 usedCustomItems.forEach { item ->
                                                     val totalItemQty = record.studentsServed * item.quantity
-                                                    val qtyStr = if (totalItemQty == totalItemQty.toLong().toDouble()) {
+                                                    val u = item.unit.lowercase()
+                                                    val qtyStr = if (u == "kg" || u == "ml" || u == "l" || u == "ltr") {
+                                                        String.format(Locale.US, "%.3f", totalItemQty)
+                                                    } else if (totalItemQty == totalItemQty.toLong().toDouble()) {
                                                         totalItemQty.toLong().toString()
                                                     } else {
-                                                        String.format(Locale.US, "%.2f", totalItemQty).trimEnd('0').trimEnd('.')
+                                                        String.format(Locale.US, "%.3f", totalItemQty).trimEnd('0').trimEnd('.')
                                                     }
                                                     Surface(
                                                         color = Color(0xFFDCFCE7),

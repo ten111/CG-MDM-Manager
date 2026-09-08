@@ -44,6 +44,10 @@ data class CustomFoodItem(
     }
 
     fun formattedQuantity(): String {
+        val u = unit.trim().lowercase()
+        if (u == "kg" || u == "ml" || u == "l" || u == "ltr") {
+            return String.format(java.util.Locale.US, "%.3f", quantity)
+        }
         return if (quantity == quantity.toLong().toDouble()) {
             quantity.toLong().toString()
         } else {

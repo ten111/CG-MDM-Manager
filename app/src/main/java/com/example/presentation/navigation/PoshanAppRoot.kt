@@ -13,6 +13,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -143,7 +145,7 @@ fun PoshanAppRoot(
         }
     }
 
-    val isTopLevelDestination = bottomNavItems.any { it.route == currentRoute }
+    val isTopLevelDestination = bottomNavItems.any { it.route == currentRoute || currentRoute?.startsWith(it.route) == true }
 
     CompositionLocalProvider(LocalAppLanguage provides currentLanguage) {
         PoshanTheme {
@@ -156,7 +158,7 @@ fun PoshanAppRoot(
                             tonalElevation = 8.dp
                         ) {
                             bottomNavItems.forEach { screen ->
-                                val selected = currentRoute == screen.route
+                                val selected = currentRoute == screen.route || currentRoute?.startsWith(screen.route) == true
                                 val title = screen.getTitle(currentLanguage)
                                 NavigationBarItem(
                                     selected = selected,
@@ -237,6 +239,25 @@ fun PoshanAppRoot(
                     composable(Screen.DailyMeal.route) {
                         DailyMealScreen(
                             viewModel = viewModel,
+                            targetDate = null,
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(
+                        route = "${Screen.DailyMeal.route}?date={date}",
+                        arguments = listOf(
+                            navArgument("date") {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) { backStackEntry ->
+                        val targetDate = backStackEntry.arguments?.getString("date")
+                        DailyMealScreen(
+                            viewModel = viewModel,
+                            targetDate = targetDate,
                             onNavigateBack = { navController.popBackStack() }
                         )
                     }
@@ -244,7 +265,25 @@ fun PoshanAppRoot(
                     composable(Screen.MonthlyMeal.route) {
                         MonthlyMealScreen(
                             viewModel = viewModel,
-                            onNavigateToDailyMeal = { navController.navigate(Screen.DailyMeal.route) }
+                            onNavigateToDailyMeal = { targetDate ->
+                                if (!targetDate.isNullOrBlank()) {
+                                    viewModel.setSelectedDate(targetDate)
+                                    navController.navigate("${Screen.DailyMeal.route}?date=$targetDate") {
+                                        popUpTo(Screen.DailyMeal.route) {
+                                            inclusive = true
+                                        }
+                                        launchSingleTop = true
+                                    }
+                                } else {
+                                    navController.navigate(Screen.DailyMeal.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            }
                         )
                     }
 
