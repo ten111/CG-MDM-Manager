@@ -125,6 +125,17 @@ fun PoshanAppRoot(
         }
     }
 
+    // When switching between screens/tabs, reset the selected month back to the current month
+    var previousRoute by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(currentRoute) {
+        if (currentRoute != null) {
+            if (previousRoute != null && previousRoute != currentRoute) {
+                viewModel.resetToCurrentMonth()
+            }
+            previousRoute = currentRoute
+        }
+    }
+
     val bottomNavItems: List<Screen> = remember(currentUserRole) {
         when (currentUserRole) {
             com.example.data.local.entity.UserRole.HEADMASTER,
@@ -163,6 +174,9 @@ fun PoshanAppRoot(
                                 NavigationBarItem(
                                     selected = selected,
                                     onClick = {
+                                        if (!selected) {
+                                            viewModel.resetToCurrentMonth()
+                                        }
                                         navController.navigate(screen.route) {
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true

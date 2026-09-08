@@ -332,6 +332,13 @@ class PoshanViewModel(application: Application) : AndroidViewModel(application) 
         _selectedMonth.value = month
     }
 
+    fun resetToCurrentMonth() {
+        val currentMonth = getIstMonthFormat().format(Date())
+        if (_selectedMonth.value != currentMonth) {
+            _selectedMonth.value = currentMonth
+        }
+    }
+
     fun setSelectedDate(date: String) {
         _selectedDate.value = date
         if (date.length >= 7) {

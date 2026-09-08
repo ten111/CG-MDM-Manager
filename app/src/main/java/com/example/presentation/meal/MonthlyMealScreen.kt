@@ -455,30 +455,13 @@ fun MonthlyMealScreen(
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = if (isHi)
-                                    "दैनिक भोजन एवं छात्र उपस्थिति दर्ज करने के लिए नीचे दिए गए बटन पर टैप करें।"
+                                    "दैनिक भोजन एवं छात्र उपस्थिति दर्ज करने के लिए 'दैनिक भोजन' टैब का उपयोग करें।"
                                 else
-                                    "Tap the button below to log daily meal and attendance for any date.",
+                                    "Use the 'Daily Meal' tab to record daily meals and student attendance.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color(0xFF64748B),
                                 textAlign = TextAlign.Center
                             )
-                            Spacer(modifier = Modifier.height(18.dp))
-                            Button(
-                                onClick = { onNavigateToDailyMeal(null) },
-                                colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AddCircleOutline,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = if (isHi) "दैनिक भोजन प्रविष्टि दर्ज करें" else "Enter Daily Meal",
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
                         }
                     }
                 }
